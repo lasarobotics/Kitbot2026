@@ -24,6 +24,7 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    // what did the cow say to the bat?
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
