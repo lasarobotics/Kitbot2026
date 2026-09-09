@@ -26,6 +26,7 @@ public class Robot extends TimedRobot {
   public Robot() {
     // abcd
     // efgh
+    // ijkl
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
