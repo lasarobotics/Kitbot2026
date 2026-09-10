@@ -49,10 +49,10 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
-    Boolean shooting = m_controller.rightTrigger().getAsBoolean();
-    Boolean intaking = m_controller.leftTrigger().getAsBoolean();
-    Boolean reversing = m_controller.b().getAsBoolean();
+  public void robotPeriodic() {
+    boolean shooting = m_controller.rightTrigger().getAsBoolean();
+    boolean intaking = m_controller.leftTrigger().getAsBoolean();
+    boolean reversing = m_controller.b().getAsBoolean();
     if (shooting) {
       m_leftMainMotor.set(1.0);
       m_rightMainMotor.set(-1.0);
@@ -63,6 +63,7 @@ public class Robot extends TimedRobot {
       m_leftMainMotor.set(-1.0);
       m_rightMainMotor.set(-1.0);
     }
+  }
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
