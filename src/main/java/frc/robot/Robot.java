@@ -4,11 +4,11 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
-
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
@@ -25,6 +25,7 @@ public class Robot extends TimedRobot {
   TalonFX m_leftMainMotor;
   TalonFX m_rightMainMotor;
 
+  DifferentialDrive m_robotDrive;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -37,11 +38,14 @@ public class Robot extends TimedRobot {
     m_rightBackDriveMotor = new TalonFX(13);
     m_leftMainMotor = new TalonFX(30);
     m_rightMainMotor = new TalonFX(31);
+
+    m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
+    m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
   }
-    // what did the cow say to the bat?
-    // moo
-    // extra 67 moo
-  
+
+  // what did the cow say to the bat?
+  // moo
+  // extra 67 moo
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -58,26 +62,13 @@ public class Robot extends TimedRobot {
     if (shooting) {
       m_leftMainMotor.set(1.0);
       m_rightMainMotor.set(-1.0);
-    } else if (intaking){
+    } else if (intaking) {
       m_leftMainMotor.set(1.0);
       m_rightMainMotor.set(1.0);
     } else if (reversing) {
       m_leftMainMotor.set(-1.0);
       m_rightMainMotor.set(-1.0);
     }
-  }
-  
-  private DifferentialDrive m_robotDrive;
-  private final PWMSparkMax m_leftMotor = new PWMSparkMax(0); // change these values
-  private final PWMSparkMax m_rightMotor = new PWMSparkMax(1); // change these values
-  @Override
-  public void robotInit() {
-    // We need to invert one side of the drivetrain so that positive voltages
-    // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
-    m_rightMotor.setInverted(true);
-
-    m_robotDrive = new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
   }
 
   /**
@@ -91,23 +82,15 @@ public class Robot extends TimedRobot {
    * chooser code above as well.
    */
   @Override
-  public void autonomousInit() {
-  
-  }
+  public void autonomousInit() {}
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
- 
-  }
+  public void autonomousPeriodic() {}
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {
-    // arcade drive in a singular xbox joystick
-    m_robotDrive.arcadeDrive(-m_controller.getLeftX(), -m_controller.getLeftX());
-
-  }
+  public void teleopInit() {}
 
   /** This function is called periodically during operator control. */
   @Override
