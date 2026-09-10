@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Micro;
+
+import java.util.function.DoubleConsumer;
+
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -41,6 +45,18 @@ public class Robot extends TimedRobot {
 
     m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
     m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
+
+    m_robotDrive = 
+      new DifferentialDrive(
+        (double speed) -> {
+          m_leftFrontDriveMotor.set(speed);
+        },
+        (double speed) -> {
+          m_rightFrontDriveMotor.set(-speed); }
+      );
+        
+      
+
   }
 
   // what did the cow say to the bat?
@@ -94,7 +110,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    m_robotDrive.arcadeDrive(m_controller.getLeftY(), -m_controller.getLeftX());
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
