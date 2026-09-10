@@ -4,10 +4,12 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -22,7 +24,8 @@ public class Robot extends TimedRobot {
   TalonFX m_rightBackDriveMotor;
   TalonFX m_leftMainMotor;
   TalonFX m_rightMainMotor;
-  
+  DifferentialDrive m_robotDrive;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -35,6 +38,19 @@ public class Robot extends TimedRobot {
     m_rightBackDriveMotor = new TalonFX(13);
     m_leftMainMotor = new TalonFX(30);
     m_rightMainMotor = new TalonFX(31);
+
+    m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
+    m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
+
+    m_robotDrive =
+        new DifferentialDrive(
+            (double speed) -> {
+              m_leftFrontDriveMotor.set(speed);
+            },
+            (double speed) -> {
+              m_rightFrontDriveMotor.set(-speed);
+            });
+    // 676767
   }
 
   /**
@@ -45,7 +61,7 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
 
     boolean shooting = m_controller.rightTrigger().getAsBoolean();
     boolean intaking = m_controller.leftTrigger().getAsBoolean();
@@ -64,6 +80,8 @@ public class Robot extends TimedRobot {
       m_leftMainMotor.set(0);
       m_rightMainMotor.set(0);
     }
+  }
+
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
@@ -75,15 +93,11 @@ public class Robot extends TimedRobot {
    * chooser code above as well.
    */
   @Override
-  public void autonomousInit() {
-  }
+  public void autonomousInit() {}
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
-    
-    
-  }
+  public void autonomousPeriodic() {}
 
   /** This function is called once when teleop is enabled. */
   @Override
@@ -91,7 +105,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    m_robotDrive.arcadeDrive(m_controller.getLeftY(), m_controller.getLeftX());
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
