@@ -5,8 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -14,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
+
  
   /**
    * This function is run when the robot is first started up and should be used for any
