@@ -7,6 +7,8 @@ package frc.robot;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
@@ -64,6 +66,20 @@ public class Robot extends TimedRobot {
       m_rightMainMotor.set(-1.0);
     }
   }
+  
+  private DifferentialDrive m_robotDrive;
+  private final PWMSparkMax m_leftMotor = new PWMSparkMax(0); // change these values
+  private final PWMSparkMax m_rightMotor = new PWMSparkMax(1); // change these values
+  @Override
+  public void robotInit() {
+    // We need to invert one side of the drivetrain so that positive voltages
+    // result in both sides moving forward. Depending on how your robot's
+    // gearbox is constructed, you might have to invert the left side instead.
+    m_rightMotor.setInverted(true);
+
+    m_robotDrive = new DifferentialDrive(m_leftMotor::set, m_rightMotor::set);
+  }
+
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
@@ -87,7 +103,11 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    // arcade drive in a singular xbox joystick
+    m_robotDrive.arcadeDrive(-m_controller.getLeftX(), -m_controller.getLeftX());
+
+  }
 
   /** This function is called periodically during operator control. */
   @Override
