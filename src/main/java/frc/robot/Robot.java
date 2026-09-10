@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.TimedRobot;
 
 /**
@@ -12,6 +13,13 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
+  TalonFX m_leftFrontDriveMotor;
+  TalonFX m_rightFrontDriveMotor;
+  TalonFX m_leftBackDriveMotor;
+  TalonFX m_rightBackDriveMotor;
+  TalonFX m_leftMainMotor;
+  TalonFX m_rightMainMotor;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -19,6 +27,12 @@ public class Robot extends TimedRobot {
   public Robot() {
     // what did the cow say to the bat?
     // moo
+    m_leftFrontDriveMotor = new TalonFX(10);
+    m_rightFrontDriveMotor = new TalonFX(11);
+    m_leftBackDriveMotor = new TalonFX(12);
+    m_rightBackDriveMotor = new TalonFX(13);
+    m_leftMainMotor = new TalonFX(30);
+    m_rightMainMotor = new TalonFX(31);
   }
 
   /**
