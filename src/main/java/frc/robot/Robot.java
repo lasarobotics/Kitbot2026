@@ -7,6 +7,7 @@ package frc.robot;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -14,6 +15,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
+  CommandXboxController m_controller = new CommandXboxController(0);
+  
   TalonFX m_leftFrontDriveMotor;
   TalonFX m_rightFrontDriveMotor;
   TalonFX m_leftBackDriveMotor;
@@ -44,8 +47,26 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
 
+    boolean shooting = m_controller.rightTrigger().getAsBoolean();
+    boolean intaking = m_controller.leftTrigger().getAsBoolean();
+    boolean reversing = m_controller.b().getAsBoolean();
+
+    if (shooting) {
+      m_leftMainMotor.set(1.0);
+      m_rightMainMotor.set(-1.0);
+    } else if (intaking) {
+      m_leftMainMotor.set(1.0);
+      m_rightMainMotor.set(1.0);
+    } else if (reversing) {
+      m_leftMainMotor.set(-1.0);
+      m_rightMainMotor.set(-1.0);
+    } else {
+      m_leftMainMotor.set(0.0);
+      m_rightMainMotor.set(0.0);
+    }
+  }
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
