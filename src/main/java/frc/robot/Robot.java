@@ -5,7 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.FuelControllerSubsystem;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -20,9 +23,12 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
-    // what did the cow say to the bat?
-    // moo
+    FuelControllerSubsystem.getInstance();
+    DriveSubsystem.getInstance();
 
+    FuelControllerSubsystem.getInstance()
+        .configureBindings(
+            m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
   }
 
   /**
@@ -34,23 +40,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // boolean shooting = m_controller.rightTrigger().getAsBoolean();
-    // boolean intaking = m_controller.leftTrigger().getAsBoolean();
-    // boolean reversing = m_controller.b().getAsBoolean();
-
-    // if (shooting) {
-    //   m_leftMainMotor.set(1.0);
-    //   m_rightMainMotor.set(-1.0);
-    // } else if (intaking) {
-    //   m_leftMainMotor.set(1.0);
-    //   m_rightMainMotor.set(1.0);
-    // } else if (reversing) {
-    //   m_leftMainMotor.set(-1.0);
-    //   m_rightMainMotor.set(-1.0);
-    // } else {
-    //   m_leftMainMotor.set(0.0);
-    //   m_rightMainMotor.set(0.0);
-    // }
+    CommandScheduler.getInstance().run();
 
     // m_robotDrive.arcadeDrive(m_controller.getLeftY(), -m_controller.getLeftX());
   }
