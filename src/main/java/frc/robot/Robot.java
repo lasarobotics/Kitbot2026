@@ -5,7 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.FuelControllerSubsystem;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -19,7 +22,14 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
-  public Robot() {}
+  public Robot() {
+    FuelControllerSubsystem.getInstance();
+    DriveSubsystem.getInstance();
+
+    FuelControllerSubsystem.getInstance()
+        .configureBindings(
+            m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
+  }
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -30,7 +40,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-
+    CommandScheduler.getInstance().run();
     // boolean shooting = m_controller.rightTrigger().getAsBoolean();
     // boolean intaking = m_controller.leftTrigger().getAsBoolean();
     // boolean reversing = m_controller.b().getAsBoolean();
