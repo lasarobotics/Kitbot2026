@@ -4,32 +4,31 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.FuelControllerSubsystem;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
- * the TimedRobot documentation. If you change the name of this class or the package after creating
- * this project, you must also update the Main.java file in the project.
+ * the TimedRobot documentation. If you change the name of this classt or the package after creating
+ * this project, you must also update the Main.java file in the projec.
  */
 public class Robot extends TimedRobot {
   CommandXboxController m_controller = new CommandXboxController(0);
-  TalonFX m_leftFrontDriveMotor;
-  TalonFX m_rightFrontDriveMotor;
-  TalonFX m_leftBackDriveMotor;
-  TalonFX m_rightBackDriveMotor;
-  TalonFX m_leftMainMotor;
-  TalonFX m_rightMainMotor;
 
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   public Robot() {
+    FuelControllerSubsystem.getInstance();
+    DriveSubsystem.getInstance();
 
-    m_leftMainMotor = new TalonFX(30);
-    m_rightMainMotor = new TalonFX(31);
+    FuelControllerSubsystem.getInstance()
+        .configureBindings(
+            m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
   }
 
   /**
@@ -41,25 +40,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-
-    // boolean shooting = m_controller.rightTrigger().getAsBoolean();
-    // boolean intaking = m_controller.leftTrigger().getAsBoolean();
-    // boolean reversing = m_controller.b().getAsBoolean();
-
-    // if (shooting) {
-    //   m_leftMainMotor.set(1.0);
-    //   m_rightMainMotor.set(-1.0);
-    // } else if (intaking) {
-    //   m_leftMainMotor.set(1.0);
-    //   m_rightMainMotor.set(1.0);
-    // } else if (reversing) {
-    //   m_leftMainMotor.set(-1.0);
-    //   m_rightMainMotor.set(-1.0);
-    // } else {
-    //   m_leftMainMotor.set(0);
-    //   m_rightMainMotor.set(0);
-    // }
-    // m_robotDrive.arcadeDrive(m_controller.getLeftY(), m_controller.getLeftX());
+    CommandScheduler.getInstance().run();
   }
 
   /**
