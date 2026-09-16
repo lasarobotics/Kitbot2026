@@ -4,11 +4,7 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
@@ -19,15 +15,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class Robot extends TimedRobot {
   CommandXboxController m_controller = new CommandXboxController(0);
 
-  TalonFX m_leftFrontDriveMotor;
-  TalonFX m_rightFrontDriveMotor;
-  TalonFX m_leftBackDriveMotor;
-  TalonFX m_rightBackDriveMotor;
-  TalonFX m_leftMainMotor;
-  TalonFX m_rightMainMotor;
-
-  DifferentialDrive m_robotDrive;
-
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -35,24 +22,7 @@ public class Robot extends TimedRobot {
   public Robot() {
     // what did the cow say to the bat?
     // moo
-    m_leftFrontDriveMotor = new TalonFX(10);
-    m_rightFrontDriveMotor = new TalonFX(11);
-    m_leftBackDriveMotor = new TalonFX(12);
-    m_rightBackDriveMotor = new TalonFX(13);
-    m_leftMainMotor = new TalonFX(30);
-    m_rightMainMotor = new TalonFX(31);
 
-    m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
-    m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
-
-    m_robotDrive =
-        new DifferentialDrive(
-            (double speed) -> {
-              m_leftFrontDriveMotor.set(speed);
-            },
-            (double speed) -> {
-              m_rightFrontDriveMotor.set(-speed);
-            });
   }
 
   /**
@@ -64,25 +34,25 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    boolean shooting = m_controller.rightTrigger().getAsBoolean();
-    boolean intaking = m_controller.leftTrigger().getAsBoolean();
-    boolean reversing = m_controller.b().getAsBoolean();
+    // boolean shooting = m_controller.rightTrigger().getAsBoolean();
+    // boolean intaking = m_controller.leftTrigger().getAsBoolean();
+    // boolean reversing = m_controller.b().getAsBoolean();
 
-    if (shooting) {
-      m_leftMainMotor.set(1.0);
-      m_rightMainMotor.set(-1.0);
-    } else if (intaking) {
-      m_leftMainMotor.set(1.0);
-      m_rightMainMotor.set(1.0);
-    } else if (reversing) {
-      m_leftMainMotor.set(-1.0);
-      m_rightMainMotor.set(-1.0);
-    } else {
-      m_leftMainMotor.set(0.0);
-      m_rightMainMotor.set(0.0);
-    }
+    // if (shooting) {
+    //   m_leftMainMotor.set(1.0);
+    //   m_rightMainMotor.set(-1.0);
+    // } else if (intaking) {
+    //   m_leftMainMotor.set(1.0);
+    //   m_rightMainMotor.set(1.0);
+    // } else if (reversing) {
+    //   m_leftMainMotor.set(-1.0);
+    //   m_rightMainMotor.set(-1.0);
+    // } else {
+    //   m_leftMainMotor.set(0.0);
+    //   m_rightMainMotor.set(0.0);
+    // }
 
-    m_robotDrive.arcadeDrive(m_controller.getLeftY(), -m_controller.getLeftX());
+    // m_robotDrive.arcadeDrive(m_controller.getLeftY(), -m_controller.getLeftX());
   }
 
   /**
