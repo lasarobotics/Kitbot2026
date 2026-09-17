@@ -1,14 +1,19 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import java.util.function.BooleanSupplier;
 
 public class FuelControllerSubsystem extends SubsystemBase {
 
   private static FuelControllerSubsystem s_fuelControllerSubsystem;
-  TalonFX m_leftMainMotor;
-  TalonFX m_rightMainMotor;
+  TalonFX m_shooterIntakeMotor;
+  TalonFX m_indexerMotor;
+
+  VelocityVoltage m_shooterIntakeRequest;
+  VelocityVoltage m_indexerRequest;
 
   BooleanSupplier m_shouldShoot;
   BooleanSupplier m_shouldIntake;
@@ -22,8 +27,11 @@ public class FuelControllerSubsystem extends SubsystemBase {
   }
 
   public FuelControllerSubsystem() {
-    m_leftMainMotor = new TalonFX(30);
-    m_rightMainMotor = new TalonFX(31);
+    m_shooterIntakeMotor = new TalonFX(30);
+    m_indexerMotor = new TalonFX(31);
+
+    m_shooterIntakeRequest = new VelocityVoltage(0);
+    m_indexerRequest = new VelocityVoltage(0);
   }
 
   public void configureBindings(
@@ -37,20 +45,67 @@ public class FuelControllerSubsystem extends SubsystemBase {
   public void periodic() {
     if (m_shouldShoot.getAsBoolean()) {
       // shooting
-      m_leftMainMotor.set(1.0);
-      m_rightMainMotor.set(-1.0);
+      runShooterMotor();
+      if (atShootingSpeed()) {
+        runIndexerMotor();
+      } else {
+        stopIndexer();
+      }
     } else if (m_shouldIntake.getAsBoolean()) {
       // intaking
-      m_leftMainMotor.set(1.0);
-      m_rightMainMotor.set(1.0);
+      setMotorsIntake();
     } else if (m_shouldReverse.getAsBoolean()) {
       // reversing
-      m_leftMainMotor.set(-1.0);
-      m_rightMainMotor.set(-1.0);
+      setMotorsReverse();
     } else {
       // nothing
-      m_leftMainMotor.set(0.0);
-      m_rightMainMotor.set(0.0);
+      stopMotors();
     }
+  }
+
+  private boolean atShootingSpeed() {
+    return m_shooterIntakeMotor
+        .getVelocity()
+        .isNear(
+            Constants.FuelController.SHOOTING_SHOOTER_SPEED,
+            Constants.FuelController.SHOOTER_SPEED_ERROR_TOLERANCE);
+  }
+
+  private void runShooterMotor() {
+    m_shooterIntakeMotor.setControl(
+        m_shooterIntakeRequest.withVelocity(Constants.FuelController.SHOOTING_SHOOTER_SPEED));
+  }
+
+  private void runIndexerMotor() {
+    m_indexerMotor.setControl(
+        m_indexerRequest.withVelocity(Constants.FuelController.SHOOTING_INDEXER_SPEED));
+  }
+
+  private void setMotorsIntake() {
+    m_shooterIntakeMotor.setControl(
+        m_shooterIntakeRequest.withVelocity(Constants.FuelController.INTAKING_SHOOTER_SPEED));
+    m_indexerMotor.setControl(
+        m_indexerRequest.withVelocity(Constants.FuelController.INTAKING_INDEXER_SPEED));
+  }
+
+  private void setMotorsReverse() {
+    m_shooterIntakeMotor.setControl(
+        m_shooterIntakeRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED));
+    m_indexerMotor.setControl(
+        m_indexerRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED));
+  }
+
+  private void stopMotors() {
+    stopShooter();
+    stopIndexer();
+  }
+
+  private void stopShooter() {
+    m_shooterIntakeMotor.stopMotor();
+    ;
+  }
+
+  private void stopIndexer() {
+    m_indexerMotor.stopMotor();
   }
 }
