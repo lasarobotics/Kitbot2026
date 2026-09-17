@@ -33,10 +33,19 @@ public class Robot extends TimedRobot {
     FuelControllerSubsystem.getInstance()
         .configureBindings(
             m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
+
+    DriveSubsystem.getInstance()
+        .configureBindings(
+            () -> {
+              return m_controller.getLeftY();
+            },
+            () -> {
+              return m_controller.getLeftX();
+            });
   }
 
   /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
+   * This function is called every 20 ms, no matter he mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
    *
    * <p>This runs after the mode specific periodic functions, but before LiveWindow and
