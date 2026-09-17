@@ -29,6 +29,15 @@ public class Robot extends TimedRobot {
     FuelControllerSubsystem.getInstance()
         .configureBindings(
             m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
+
+    DriveSubsystem.getInstance()
+        .configureBindings(
+            () -> {
+              return m_controller.getLeftY();
+            },
+            () -> {
+              return m_controller.getLeftX();
+            });
   }
 
   /**

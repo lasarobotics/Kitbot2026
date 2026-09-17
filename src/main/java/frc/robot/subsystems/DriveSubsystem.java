@@ -5,6 +5,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.DoubleSupplier;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -16,11 +17,19 @@ public class DriveSubsystem extends SubsystemBase {
 
   DifferentialDrive m_robotDrive;
 
+  DoubleSupplier m_driveRequest;
+  DoubleSupplier m_turnRequest;
+
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
       s_driveSubsystem = new DriveSubsystem();
     }
     return s_driveSubsystem;
+  }
+
+  public void configureBindings(DoubleSupplier driveRequest, DoubleSupplier turnRequest) {
+    m_driveRequest = driveRequest;
+    m_turnRequest = turnRequest;
   }
 
   public DriveSubsystem() {
@@ -40,5 +49,11 @@ public class DriveSubsystem extends SubsystemBase {
             (double speed) -> {
               m_rightFrontDriveMotor.set(-speed);
             });
+    // 676767
+  }
+
+  @Override
+  public void periodic() {
+    m_robotDrive.arcadeDrive(m_driveRequest.getAsDouble(), -m_turnRequest.getAsDouble());
   }
 }
