@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -17,6 +19,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   DifferentialDrive m_robotDrive;
 
+  DoubleSupplier m_driveRequest;
+  DoubleSupplier m_turnRequest;
+
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
       s_driveSubsystem = new DriveSubsystem();
@@ -33,7 +38,7 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
     m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
 
-    
+
     m_robotDrive =
         new DifferentialDrive(
             (double speed) -> {
@@ -43,4 +48,16 @@ public class DriveSubsystem extends SubsystemBase {
               m_rightFrontDriveMotor.set(-speed);
             });
   }
+  public void configureBindings(
+    DoubleSupplier driveRequest, DoubleSupplier turnRequest) {
+    m_driveRequest = driveRequest;
+    m_turnRequest = turnRequest;
+  }
+  
+  @Override
+  public void periodic() {
+    m_robotDrive.arcadeDrive(m_driveRequest.getAsDouble(), -m_turnRequest.getAsDouble());
+  }
 }
+
+
