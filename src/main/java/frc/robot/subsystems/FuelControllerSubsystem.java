@@ -1,11 +1,14 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import java.util.function.BooleanSupplier;
+import org.littletonrobotics.junction.Logger;
 
 public class FuelControllerSubsystem extends SubsystemBase {
 
@@ -67,6 +70,23 @@ public class FuelControllerSubsystem extends SubsystemBase {
     } else {
       // nothing
       stopMotors();
+    }
+
+    Logger.recordOutput("FuelControllerSubsystem/atShootingSpeed", atShootingSpeed());
+    Logger.recordOutput(
+        "FuelControllerSubsystem/atShootingSpeed",
+        m_shooterIntakeMotor.getVelocity().getValue().in(RotationsPerSecond));
+    Logger.recordOutput(
+        "FuelControllerSubsystem/indexerSpeed",
+        m_shooterIntakeMotor.getVelocity().getValue().in(RotationsPerSecond));
+    if (m_shouldShoot.getAsBoolean()) {
+      Logger.recordOutput("FuelControllerSubsystem/currentState", "shooting");
+    } else if (m_shouldIntake.getAsBoolean()) {
+      Logger.recordOutput("FuelControllerSubsystem/currentState", "intaking");
+    } else if (m_shouldReverse.getAsBoolean()) {
+      Logger.recordOutput("FuelControllerSubsystem/currentState", "reversing");
+    } else {
+      Logger.recordOutput("FuelControllerSubsystem/currentState", "nothing");
     }
   }
 

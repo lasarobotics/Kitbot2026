@@ -6,6 +6,7 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -53,6 +54,21 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    double driveRequest = m_driveRequest.getAsDouble();
+    double turnRequest = m_turnRequest.getAsDouble();
+
     m_robotDrive.arcadeDrive(m_driveRequest.getAsDouble(), -m_turnRequest.getAsDouble());
+
+    Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
+    Logger.recordOutput("DriveSubsystem/turnRequest", m_turnRequest.getAsDouble());
+    DifferentialDrive.WheelSpeeds wheelspeeds =
+        DifferentialDrive.arcadeDriveIK(driveRequest, -turnRequest, true);
+    Logger.recordOutput("DriveSubsystem/leftWheelWantedDutyCycle", wheelspeeds.left);
+    Logger.recordOutput("DriveSubsystem/rightWheelWantedDutyCycle", wheelspeeds.right);
+    Logger.recordOutput(
+        "DriveSubsystem/leftWheelActualDutyCycle", m_leftFrontDriveMotor.getDutyCycle().getValue());
+    Logger.recordOutput(
+        "DriveSubsystem/rightWheelActualDutyCycle",
+        -m_rightFrontDriveMotor.getDutyCycle().getValue());
   }
 }
