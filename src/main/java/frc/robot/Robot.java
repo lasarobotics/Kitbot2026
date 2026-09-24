@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.DriveSubsystem;
@@ -36,14 +37,38 @@ public class Robot extends LoggedRobot {
 
     FuelControllerSubsystem.getInstance()
         .configureBindings(
-            m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
+            // shoot
+            () -> {
+              if (isAutonomous()) {
+                return m_shouldAutoShoot;
+              } else {
+                return m_controller.rightTrigger().getAsBoolean();
+              }
+            },
+            // intake
+            m_controller.leftTrigger(),
+            // reverse
+            m_controller.b());
+
     DriveSubsystem.getInstance()
         .configureBindings(
             () -> {
-              return m_controller.getLeftY();
+              if (isAutonomous()) {
+                if (m_shouldAutoDrive) {
+                  return Constants.Auto.AUTO_DRIVE_SPEED;
+                } else {
+                  return 0;
+                }
+              } else {
+                return -m_controller.getLeftY();
+              }
             },
             () -> {
-              return m_controller.getRightX();
+              if (isAutonomous()) {
+                return 0;
+              } else {
+                return -m_controller.getRightX();
+              }
             });
   }
 
@@ -59,6 +84,10 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
   }
 
+  private Timer m_autoTimer = new Timer();
+  private boolean m_shouldAutoDrive = false;
+  private boolean m_shouldAutoShoot = false;
+
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
@@ -70,15 +99,40 @@ public class Robot extends LoggedRobot {
    * chooser code above as well.
    */
   @Override
-  public void autonomousInit() {}
+  public void autonomousInit() {
+    m_autoTimer.reset();
+    m_autoTimer.start();
+  }
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    if (!m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME)) {
+      m_shouldAutoDrive = true;
+    } else {
+      m_shouldAutoDrive = false;
+    }
+
+    // if has passed driving time
+    // but has not passed total time
+    if (m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME)
+        && !m_autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+      m_shouldAutoShoot = true;
+    } else {
+      m_shouldAutoShoot = false;
+    }
+
+    Logger.recordOutput("Auto/timeElapsed", m_autoTimer.get());
+    Logger.recordOutput("Auto/autoDriving", m_shouldAutoDrive);
+    Logger.recordOutput("Auto/autoShooting", m_shouldAutoShoot);
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    m_shouldAutoDrive = false;
+    m_shouldAutoShoot = false;
+  }
 
   /** This function is called periodically during operator control. */
   @Override
