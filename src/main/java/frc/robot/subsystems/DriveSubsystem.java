@@ -57,7 +57,7 @@ public class DriveSubsystem extends SubsystemBase {
     double driveRequest = m_driveRequest.getAsDouble();
     double turnRequest = m_turnRequest.getAsDouble();
 
-    m_robotDrive.arcadeDrive(driveRequest, -turnRequest, true);
+    m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
     Logger.recordOutput("DriveSubsystem/turnRequest", m_turnRequest.getAsDouble());

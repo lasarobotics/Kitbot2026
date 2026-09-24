@@ -23,7 +23,7 @@ public class Robot extends LoggedRobot {
 
   /**
    * This function is run when the robot is first started up and should be used for any
-   * initialization code.
+   * initi(alization code.
    */
   public Robot() {
     Logger.addDataReceiver(new WPILOGWriter());
@@ -37,13 +37,26 @@ public class Robot extends LoggedRobot {
     FuelControllerSubsystem.getInstance()
         .configureBindings(
             m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
+
     DriveSubsystem.getInstance()
         .configureBindings(
             () -> {
-              return m_controller.getLeftY();
+              if (isAutonomous()) {
+                if (m_shouldAutoDrive) {
+                  return Constants.Auto.AUTO_DRIVE_SPEED;
+                } else {
+                  return 0;
+                }
+              } else {
+                return -m_controller.getLeftY();
+              }
             },
             () -> {
-              return m_controller.getRightX();
+              if (isAutonomous()) {
+                return 0;
+              } else {
+                return 0;
+              }
             });
   }
 
