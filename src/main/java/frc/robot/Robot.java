@@ -137,7 +137,8 @@ public class Robot extends LoggedRobot {
     }
 
     Logger.recordOutput("Auto/timeElapsed", m_autoTimer.get());
-    Logger.recordOutput(null, null);
+    Logger.recordOutput("Auto/autoDriving", m_shouldAutoDrive);
+    Logger.recordOutput("Auto/autoShooting", m_shouldAutoShoot);
   }
 
   /** This function is called once when teleop is enabled. */
