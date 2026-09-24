@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.DriveSubsystem;
@@ -71,7 +72,9 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
   }
-
+  private Timer autotimer = new Timer();
+  private boolean m_shouldAutoDrive;
+  private boolean m_shouldAutoShoot;
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
@@ -87,7 +90,15 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    if (!autoTimer.hasElaspsed(Constants.Auto.AUTO_DRIVE_TIME)
+    && !autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+      m_shouldAutoShoot = true;
+    } else {
+      m_shouldAutoShoot = false;
+    }
+    }
+  
 
   /** This function is called once when teleop is enabled. */
   @Override
