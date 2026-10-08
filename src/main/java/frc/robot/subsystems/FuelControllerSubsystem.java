@@ -6,7 +6,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 // import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
+// import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -42,7 +42,7 @@ public class FuelControllerSubsystem extends SubsystemBase {
 
     TalonFXConfiguration shooterIntakeConfig = new TalonFXConfiguration();
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
-    indexerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    // indexerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
   
 
     m_shooterIntakeMotor.getConfigurator().apply(shooterIntakeConfig);
