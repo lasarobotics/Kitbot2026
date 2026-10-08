@@ -3,7 +3,8 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+// import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 
@@ -18,8 +19,8 @@ public class FuelControllerSubsystem extends SubsystemBase {
   TalonFX m_shooterIntakeMotor;
   TalonFX m_indexerMotor;
 
-  VelocityVoltage m_shooterIntakeRequest;
-  VelocityVoltage m_indexerRequest;
+  VoltageOut m_shooterIntakeRequest;
+  VoltageOut m_indexerRequest;
 
   BooleanSupplier m_shouldShoot;
   BooleanSupplier m_shouldIntake;
@@ -36,12 +37,13 @@ public class FuelControllerSubsystem extends SubsystemBase {
     m_shooterIntakeMotor = new TalonFX(30);
     m_indexerMotor = new TalonFX(31);
 
-    m_shooterIntakeRequest = new VelocityVoltage(0);
-    m_indexerRequest = new VelocityVoltage(0);
+    m_shooterIntakeRequest = new VoltageOut(0);
+    m_indexerRequest = new VoltageOut(0);
 
     TalonFXConfiguration shooterIntakeConfig = new TalonFXConfiguration();
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
     indexerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+  
 
     m_shooterIntakeMotor.getConfigurator().apply(shooterIntakeConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
@@ -62,11 +64,11 @@ public class FuelControllerSubsystem extends SubsystemBase {
 
     if (shooting) {
       runShooterMotor();
-      if (atShootingSpeed()) {
-        runIndexerMotor();
-      } else {
-        stopIndexer();
-      }
+      // if (atShootingSpeed()) {
+      runIndexerMotor();
+      // } else {
+        //stopIndexer();
+      // }
     } else if (intaking) {
       setMotorsIntake();
     } else if (reversing) {
@@ -77,7 +79,7 @@ public class FuelControllerSubsystem extends SubsystemBase {
       stopMotors();
     }
 
-    Logger.recordOutput("FuelControllerSubsystem/atShootingSpeed", atShootingSpeed());
+    // Logger.recordOutput("FuelControllerSubsystem/atShootingSpeed", atShootingSpeed());
     Logger.recordOutput(
         "FuelControllerSubsystem/shooterIntakeSpeed",
         m_shooterIntakeMotor.getVelocity().getValue().in(RotationsPerSecond));
@@ -95,36 +97,36 @@ public class FuelControllerSubsystem extends SubsystemBase {
     }
   }
 
-  private boolean atShootingSpeed() {
-    return m_shooterIntakeMotor
-        .getVelocity()
-        .isNear(
-            Constants.FuelController.SHOOTING_SHOOTER_SPEED,
-            Constants.FuelController.SHOOTER_SPEED_ERROR_TOLERANCE);
-  }
+  //private boolean atShootingSpeed() {
+    //return m_shooterIntakeMotor
+        //.getVelocity()
+        //.isNear(
+          //  Constants.FuelController.SHOOTING_SHOOTER_SPEED,
+          //  Constants.FuelController.SHOOTER_SPEED_ERROR_TOLERANCE);
+  //}
 
   private void runShooterMotor() {
     m_shooterIntakeMotor.setControl(
-        m_shooterIntakeRequest.withVelocity(Constants.FuelController.SHOOTING_SHOOTER_SPEED));
+        m_shooterIntakeRequest.withOutput(Constants.FuelController.SHOOTING_SHOOTER_SPEED));
   }
 
   private void runIndexerMotor() {
     m_indexerMotor.setControl(
-        m_indexerRequest.withVelocity(Constants.FuelController.SHOOTING_INDEXER_SPEED));
+        m_indexerRequest.withOutput(Constants.FuelController.SHOOTING_INDEXER_SPEED));
   }
 
   private void setMotorsIntake() {
     m_shooterIntakeMotor.setControl(
-        m_shooterIntakeRequest.withVelocity(Constants.FuelController.INTAKING_SHOOTER_SPEED));
+        m_shooterIntakeRequest.withOutput(Constants.FuelController.INTAKING_SHOOTER_SPEED));
     m_indexerMotor.setControl(
-        m_indexerRequest.withVelocity(Constants.FuelController.INTAKING_INDEXER_SPEED));
+        m_indexerRequest.withOutput(Constants.FuelController.INTAKING_INDEXER_SPEED));
   }
 
   private void setMotorsReverse() {
     m_shooterIntakeMotor.setControl(
-        m_shooterIntakeRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED));
+        m_shooterIntakeRequest.withOutput(Constants.FuelController.REVERSING_INDEXER_SPEED));
     m_indexerMotor.setControl(
-        m_indexerRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED));
+        m_indexerRequest.withOutput(Constants.FuelController.REVERSING_INDEXER_SPEED));
   }
 
   private void stopMotors() {
