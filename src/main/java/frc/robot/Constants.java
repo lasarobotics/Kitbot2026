@@ -12,7 +12,7 @@ public final class Constants {
     public static final double SHOOTING_INDEXER_SPEED = -2.0;
 
     public static final double INTAKING_SHOOTER_SPEED = 2.0;
-    public static final double INTAKING_INDEXER_SPEED = 2.3;
+    public static final double INTAKING_INDEXER_SPEED = 2.0;
 
     public static final double REVERSING_SHOOTER_SPEED = -2.0;
     public static final double REVERSING_INDEXER_SPEED = -1.5;
