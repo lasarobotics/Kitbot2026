@@ -45,10 +45,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_robotDrive =
         new DifferentialDrive(
             (double speed) -> {
-              m_leftFrontDriveMotor.set(speed*0.15);
+              m_leftFrontDriveMotor.set(speed);
             },
             (double speed) -> {
-              m_rightFrontDriveMotor.set(-speed*0.15);
+              m_rightFrontDriveMotor.set(-speed);
             });
   }
 

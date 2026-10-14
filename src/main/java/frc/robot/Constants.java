@@ -8,14 +8,14 @@ import edu.wpi.first.units.measure.Time;
 
 public final class Constants {
   public static class FuelController {
-    public static final double SHOOTING_SHOOTER_SPEED = 2.0;
-    public static final double SHOOTING_INDEXER_SPEED = -2.0;
+    public static final double SHOOTING_SHOOTER_SPEED = 8.0;
+    public static final double SHOOTING_INDEXER_SPEED = -8.0;
 
-    public static final double INTAKING_SHOOTER_SPEED = 2.0;
-    public static final double INTAKING_INDEXER_SPEED = 2.0;
+    public static final double INTAKING_SHOOTER_SPEED = 4.0;
+    public static final double INTAKING_INDEXER_SPEED = 12.0;
 
     public static final double REVERSING_SHOOTER_SPEED = -2.0;
-    public static final double REVERSING_INDEXER_SPEED = -1.5;
+    public static final double REVERSING_INDEXER_SPEED = -7.5;
 
     public static final double SHOOTER_SPEED_ERROR_TOLERANCE = 0.25;
   }
