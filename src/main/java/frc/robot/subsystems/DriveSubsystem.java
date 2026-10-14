@@ -48,7 +48,7 @@ public class DriveSubsystem extends SubsystemBase {
               m_leftFrontDriveMotor.set(speed);
             },
             (double speed) -> {
-              m_rightFrontDriveMotor.set(-speed);
+              m_rightFrontDriveMotor.set(-speed*0.9999);
             });
   }
 
