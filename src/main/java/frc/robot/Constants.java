@@ -21,7 +21,7 @@ public final class Constants {
   }
 
   public static class Auto {
-    public static final Time AUTO_DRIVE_TIME = Seconds.of(0.85);
+    public static final Time AUTO_DRIVE_TIME = Seconds.of(0.95);
     public static final Time AUTO_SHOOT_TIME = Seconds.of(4);
     public static final Time TOTAL_AUTO_TIME = AUTO_DRIVE_TIME.plus(AUTO_SHOOT_TIME);
 
