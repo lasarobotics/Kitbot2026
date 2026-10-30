@@ -103,6 +103,7 @@ public class Robot extends LoggedRobot {
   private Timer m_autoTimer = new Timer();
   private boolean m_shouldAutoDrive = false;
   private boolean m_shouldAutoShoot = false;
+  private boolean m_shouldAutoTurn = false;
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -130,10 +131,18 @@ public class Robot extends LoggedRobot {
     }
 
     if (m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME)
-        && !m_autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+        && !m_autoTimer.hasElapsed(
+            Constants.Auto.TOTAL_AUTO_TIME.minus(Constants.Auto.AUTO_TURN_TIME))) {
       m_shouldAutoShoot = true;
     } else {
       m_shouldAutoShoot = false;
+    }
+
+    if (m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME.plus(Constants.Auto.AUTO_SHOOT_TIME))
+        && !m_autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+      m_shouldAutoTurn = true;
+    } else {
+      m_shouldAutoTurn = false;
     }
 
     Logger.recordOutput("Auto/timeElapsed", m_autoTimer.get());
