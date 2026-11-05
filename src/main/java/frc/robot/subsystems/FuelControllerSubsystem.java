@@ -12,12 +12,12 @@ import org.littletonrobotics.junction.Logger;
 
 public class FuelControllerSubsystem extends SubsystemBase {
 
-  public static FuelControllerSubsystem s_fuelControllerSubsystem;
+  private static FuelControllerSubsystem s_fuelControllerSubsystem;
   TalonFX m_shooterIntakeMotor;
   TalonFX m_indexerMotor;
 
-  private final VelocityVoltage m_shooterIntakeRequest;
-  private final VelocityVoltage m_indexerRequest;
+  VelocityVoltage m_shooterIntakeRequest;
+  VelocityVoltage m_indexerRequest;
 
   BooleanSupplier m_shouldShoot;
   BooleanSupplier m_shouldIntake;
@@ -42,7 +42,6 @@ public class FuelControllerSubsystem extends SubsystemBase {
 
     m_shooterIntakeMotor.getConfigurator().apply(shooterIntakeConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
-    // 676767
   }
 
   public void configureBindings(
@@ -50,13 +49,15 @@ public class FuelControllerSubsystem extends SubsystemBase {
     m_shouldShoot = shouldShoot;
     m_shouldIntake = shouldIntake;
     m_shouldReverse = shouldReverse;
-    // 676767
   }
 
   @Override
   public void periodic() {
+    boolean shooting = m_shouldShoot.getAsBoolean();
+    boolean intaking = m_shouldIntake.getAsBoolean();
+    boolean reversing = m_shouldReverse.getAsBoolean();
 
-    if (m_shouldShoot.getAsBoolean()) {
+    if (shooting) {
       runShooter();
 
       if (atShootingSpeed()) {
@@ -65,9 +66,9 @@ public class FuelControllerSubsystem extends SubsystemBase {
         stopIndexer();
       }
 
-    } else if (m_shouldIntake.getAsBoolean()) {
+    } else if (intaking) {
       setMotorsIntake();
-    } else if (m_shouldReverse.getAsBoolean()) {
+    } else if (reversing) {
       setMotorsReverse();
     } else {
       stopMotors();
@@ -75,7 +76,7 @@ public class FuelControllerSubsystem extends SubsystemBase {
 
     Logger.recordOutput("FuelControllerSubsystem/atShootingSpeed", atShootingSpeed());
     Logger.recordOutput(
-        "FuelControllerSubsystem/shooterIntakeSpeed",
+        "FuelControllerSubsystem/shooterSpeed",
         m_shooterIntakeMotor.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(
         "FuelControllerSubsystem/indexerSpeed",
@@ -90,8 +91,6 @@ public class FuelControllerSubsystem extends SubsystemBase {
     } else {
       Logger.recordOutput("FuelControllerSubsystem/currentState", "nothing");
     }
-
-    // 676767
   }
 
   private boolean atShootingSpeed() {
@@ -114,16 +113,18 @@ public class FuelControllerSubsystem extends SubsystemBase {
 
   private void setMotorsIntake() {
     m_shooterIntakeMotor.setControl(
-        m_shooterIntakeRequest.withVelocity(Constants.FuelController.INTAKING_SHOOTER_SPEED));
+        m_shooterIntakeRequest.withVelocity(
+            Constants.FuelController.INTAKING_SHOOTER_SPEED)); // 30 rps
     m_indexerMotor.setControl(
-        m_indexerRequest.withVelocity(Constants.FuelController.INTAKING_INDEXER_SPEED));
+        m_indexerRequest.withVelocity(Constants.FuelController.INTAKING_INDEXER_SPEED)); // 40 rps
   }
 
   private void setMotorsReverse() {
     m_shooterIntakeMotor.setControl(
-        m_shooterIntakeRequest.withVelocity(Constants.FuelController.REVERSING_SHOOTER_SPEED));
+        m_shooterIntakeRequest.withVelocity(
+            Constants.FuelController.REVERSING_SHOOTER_SPEED)); // -30 rps
     m_indexerMotor.setControl(
-        m_indexerRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED));
+        m_indexerRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED)); // -30 rps
   }
 
   private void stopMotors() {

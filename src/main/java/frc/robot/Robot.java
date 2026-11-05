@@ -16,8 +16,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
- * the TimedRobot documentation. If you change the name of this classt or the package after creating
- * this project, you must also update the Main.java file in the projec.
+ * the TimedRobot documentation. If you change the name of this class or the package after creating
+ * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends LoggedRobot {
   CommandXboxController m_controller = new CommandXboxController(0);
@@ -67,7 +67,6 @@ public class Robot extends LoggedRobot {
                 return -m_controller.getRightX();
               }
             });
-    // 676767
   }
 
   /**
@@ -80,11 +79,31 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    // boolean shooting = m_controller.rightTrigger().getAsBoolean();
+    // boolean intaking = m_controller.leftTrigger().getAsBoolean();
+    // boolean reversing = m_controller.b().getAsBoolean();
+
+    // if (shooting) {
+    //   m_leftMainMotor.set(1.0);
+    //   m_rightMainMotor.set(-1.0);
+    // } else if (intaking) {
+    //   m_leftMainMotor.set(1.0);
+    //   m_rightMainMotor.set(1.0);
+    // } else if (reversing) {
+    //   m_leftMainMotor.set(-1.0);
+    //   m_rightMainMotor.set(-1.0);
+    // } else {
+    //   m_leftMainMotor.set(0.0);
+    //   m_rightMainMotor.set(0.0);
+    // }
+
+    // m_robotDrive.arcadeDrive(m_controller.getLeftY(), -m_controller.getLeftX());
   }
 
   private Timer m_autoTimer = new Timer();
   private boolean m_shouldAutoDrive = false;
   private boolean m_shouldAutoShoot = false;
+  private boolean m_shouldAutoTurn = false;
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -112,10 +131,18 @@ public class Robot extends LoggedRobot {
     }
 
     if (m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME)
-        && !m_autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+        && !m_autoTimer.hasElapsed(
+            Constants.Auto.TOTAL_AUTO_TIME.minus(Constants.Auto.AUTO_TURN_TIME))) {
       m_shouldAutoShoot = true;
     } else {
       m_shouldAutoShoot = false;
+    }
+
+    if (m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME.plus(Constants.Auto.AUTO_SHOOT_TIME))
+        && !m_autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+      m_shouldAutoTurn = true;
+    } else {
+      m_shouldAutoTurn = false;
     }
 
     Logger.recordOutput("Auto/timeElapsed", m_autoTimer.get());
@@ -125,10 +152,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {
-    m_shouldAutoDrive = false;
-    m_shouldAutoShoot = false;
-  }
+  public void teleopInit() {}
 
   /** This function is called periodically during operator control. */
   @Override
