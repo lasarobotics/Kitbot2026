@@ -50,21 +50,20 @@ public class DriveSubsystem extends SubsystemBase {
             (double speed) -> {
               m_rightFrontDriveMotor.set(-speed);
             });
+    // 676767
   }
 
   @Override
   public void periodic() {
     double driveRequest = m_driveRequest.getAsDouble();
     double turnRequest = m_turnRequest.getAsDouble();
-
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
     Logger.recordOutput("DriveSubsystem/turnRequest", m_turnRequest.getAsDouble());
-    DifferentialDrive.WheelSpeeds wheelSpeeds =
-        DifferentialDrive.arcadeDriveIK(driveRequest, -turnRequest, true);
-    Logger.recordOutput("DriveSubsystem/leftWheelWantedDutyCycle", wheelSpeeds.left);
-    Logger.recordOutput("DriveSubsystem/rightWheelWantedDutyCycle", wheelSpeeds.right);
+    DifferentialDrive.WheelSpeeds wheelSpeeds = DifferentialDrive.arcadeDriveIK(0, 0, true);
+    Logger.recordOutput("DriveSubsystem/leftWheelWantedOutput", wheelSpeeds.left);
+    Logger.recordOutput("DriveSubsystem/rightWheelWantedOutput", wheelSpeeds.right);
     Logger.recordOutput(
         "DriveSubsystem/leftWheelActualDutyCycle", m_leftFrontDriveMotor.getDutyCycle().getValue());
     Logger.recordOutput(

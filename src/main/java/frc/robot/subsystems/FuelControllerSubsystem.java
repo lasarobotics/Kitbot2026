@@ -58,34 +58,35 @@ public class FuelControllerSubsystem extends SubsystemBase {
     boolean reversing = m_shouldReverse.getAsBoolean();
 
     if (shooting) {
-      runShooterMotor();
+      runShooter();
+
       if (atShootingSpeed()) {
-        runIndexerMotor();
+        runIndexer();
       } else {
         stopIndexer();
       }
+
     } else if (intaking) {
       setMotorsIntake();
     } else if (reversing) {
-      // reversing
       setMotorsReverse();
     } else {
-      // nothing
       stopMotors();
     }
 
     Logger.recordOutput("FuelControllerSubsystem/atShootingSpeed", atShootingSpeed());
     Logger.recordOutput(
-        "FuelControllerSubsystem/shooterIntakeSpeed",
+        "FuelControllerSubsystem/shooterSpeed",
         m_shooterIntakeMotor.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(
         "FuelControllerSubsystem/indexerSpeed",
         m_indexerMotor.getVelocity().getValue().in(RotationsPerSecond));
-    if (shooting) {
+
+    if (m_shouldShoot.getAsBoolean()) {
       Logger.recordOutput("FuelControllerSubsystem/currentState", "shooting");
-    } else if (intaking) {
+    } else if (m_shouldIntake.getAsBoolean()) {
       Logger.recordOutput("FuelControllerSubsystem/currentState", "intaking");
-    } else if (reversing) {
+    } else if (m_shouldReverse.getAsBoolean()) {
       Logger.recordOutput("FuelControllerSubsystem/currentState", "reversing");
     } else {
       Logger.recordOutput("FuelControllerSubsystem/currentState", "nothing");
@@ -100,28 +101,30 @@ public class FuelControllerSubsystem extends SubsystemBase {
             Constants.FuelController.SHOOTER_SPEED_ERROR_TOLERANCE);
   }
 
-  private void runShooterMotor() {
+  private void runShooter() {
     m_shooterIntakeMotor.setControl(
         m_shooterIntakeRequest.withVelocity(Constants.FuelController.SHOOTING_SHOOTER_SPEED));
   }
 
-  private void runIndexerMotor() {
+  private void runIndexer() {
     m_indexerMotor.setControl(
         m_indexerRequest.withVelocity(Constants.FuelController.SHOOTING_INDEXER_SPEED));
   }
 
   private void setMotorsIntake() {
     m_shooterIntakeMotor.setControl(
-        m_shooterIntakeRequest.withVelocity(Constants.FuelController.INTAKING_SHOOTER_SPEED));
+        m_shooterIntakeRequest.withVelocity(
+            Constants.FuelController.INTAKING_SHOOTER_SPEED)); // 30 rps
     m_indexerMotor.setControl(
-        m_indexerRequest.withVelocity(Constants.FuelController.INTAKING_INDEXER_SPEED));
+        m_indexerRequest.withVelocity(Constants.FuelController.INTAKING_INDEXER_SPEED)); // 40 rps
   }
 
   private void setMotorsReverse() {
     m_shooterIntakeMotor.setControl(
-        m_shooterIntakeRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED));
+        m_shooterIntakeRequest.withVelocity(
+            Constants.FuelController.REVERSING_SHOOTER_SPEED)); // -30 rps
     m_indexerMotor.setControl(
-        m_indexerRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED));
+        m_indexerRequest.withVelocity(Constants.FuelController.REVERSING_INDEXER_SPEED)); // -30 rps
   }
 
   private void stopMotors() {
@@ -131,7 +134,6 @@ public class FuelControllerSubsystem extends SubsystemBase {
 
   private void stopShooter() {
     m_shooterIntakeMotor.stopMotor();
-    ;
   }
 
   private void stopIndexer() {

@@ -24,7 +24,7 @@ public class Robot extends LoggedRobot {
 
   /**
    * This function is run when the robot is first started up and should be used for any
-   * initi(alization code.
+   * initialization code.
    */
   public Robot() {
     Logger.addDataReceiver(new WPILOGWriter());
@@ -37,7 +37,15 @@ public class Robot extends LoggedRobot {
 
     FuelControllerSubsystem.getInstance()
         .configureBindings(
-            m_controller.rightTrigger(), m_controller.leftTrigger(), m_controller.b());
+            () -> {
+              if (isAutonomous()) {
+                return m_shouldAutoShoot;
+              } else {
+                return m_controller.rightTrigger().getAsBoolean();
+              }
+            },
+            m_controller.leftTrigger(),
+            m_controller.b());
 
     DriveSubsystem.getInstance()
         .configureBindings(
@@ -56,7 +64,7 @@ public class Robot extends LoggedRobot {
               if (isAutonomous()) {
                 return 0;
               } else {
-                return 0;
+                return -m_controller.getRightX();
               }
             });
   }
@@ -71,10 +79,32 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    // boolean shooting = m_controller.rightTrigger().getAsBoolean();
+    // boolean intaking = m_controller.leftTrigger().getAsBoolean();
+    // boolean reversing = m_controller.b().getAsBoolean();
+
+    // if (shooting) {
+    //   m_leftMainMotor.set(1.0);
+    //   m_rightMainMotor.set(-1.0);
+    // } else if (intaking) {
+    //   m_leftMainMotor.set(1.0);
+    //   m_rightMainMotor.set(1.0);
+    // } else if (reversing) {
+    //   m_leftMainMotor.set(-1.0);
+    //   m_rightMainMotor.set(-1.0);
+    // } else {
+    //   m_leftMainMotor.set(0.0);
+    //   m_rightMainMotor.set(0.0);
+    // }
+
+    // m_robotDrive.arcadeDrive(m_controller.getLeftY(), -m_controller.getLeftX());
   }
-  private Timer autotimer = new Timer();
-  private boolean m_shouldAutoDrive;
-  private boolean m_shouldAutoShoot;
+
+  private Timer m_autoTimer = new Timer();
+  private boolean m_shouldAutoDrive = false;
+  private boolean m_shouldAutoShoot = false;
+  private boolean m_shouldAutoTurn = false;
+
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
    * autonomous modes using the dashboard. The sendable chooser code works with the Java
@@ -86,19 +116,39 @@ public class Robot extends LoggedRobot {
    * chooser code above as well.
    */
   @Override
-  public void autonomousInit() {}
+  public void autonomousInit() {
+    m_autoTimer.reset();
+    m_autoTimer.start();
+  }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    if (!autoTimer.hasElaspsed(Constants.Auto.AUTO_DRIVE_TIME)
-    && !autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+    if (!m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME)) {
+      m_shouldAutoDrive = true;
+    } else {
+      m_shouldAutoDrive = false;
+    }
+
+    if (m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME)
+        && !m_autoTimer.hasElapsed(
+            Constants.Auto.TOTAL_AUTO_TIME.minus(Constants.Auto.AUTO_TURN_TIME))) {
       m_shouldAutoShoot = true;
     } else {
       m_shouldAutoShoot = false;
     }
+
+    if (m_autoTimer.hasElapsed(Constants.Auto.AUTO_DRIVE_TIME.plus(Constants.Auto.AUTO_SHOOT_TIME))
+        && !m_autoTimer.hasElapsed(Constants.Auto.TOTAL_AUTO_TIME)) {
+      m_shouldAutoTurn = true;
+    } else {
+      m_shouldAutoTurn = false;
     }
-  
+
+    Logger.recordOutput("Auto/timeElapsed", m_autoTimer.get());
+    Logger.recordOutput("Auto/autoDriving", m_shouldAutoDrive);
+    Logger.recordOutput("Auto/autoShooting", m_shouldAutoShoot);
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
