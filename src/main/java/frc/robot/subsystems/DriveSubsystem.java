@@ -39,6 +39,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   public DriveSubsystem() {
     m_gyro = new Pigeon2(0);
+    // 676767
 
     m_leftFrontDriveMotor = new TalonFX(10);
     m_rightFrontDriveMotor = new TalonFX(11);
