@@ -4,7 +4,11 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -19,6 +23,8 @@ public class DriveSubsystem extends SubsystemBase {
   TalonFX m_rightFrontDriveMotor;
   TalonFX m_leftBackDriveMotor;
   TalonFX m_rightBackDriveMotor;
+
+  DifferentialDrivetrainSim m_DifferentialDrivetrainSim;
 
   DifferentialDrive m_robotDrive;
 
@@ -47,6 +53,16 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
     m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
+
+    m_DifferentialDrivetrainSim =
+        new DifferentialDrivetrainSim(
+            DCMotor.getKrakenX60(2),
+            10.71,
+            3.5,
+            18.35,
+            Units.inchesToMeters(3),
+            Units.inchesToMeters(21.67),
+            VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
 
     m_robotDrive =
         new DifferentialDrive(
