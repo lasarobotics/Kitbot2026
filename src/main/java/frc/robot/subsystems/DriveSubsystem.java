@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -11,6 +12,7 @@ import org.littletonrobotics.junction.Logger;
 public class DriveSubsystem extends SubsystemBase {
 
   private static DriveSubsystem s_driveSubsystem;
+  Pigeon2 m_gyrPigeon2;
   TalonFX m_leftFrontDriveMotor;
   TalonFX m_rightFrontDriveMotor;
   TalonFX m_leftBackDriveMotor;
@@ -34,6 +36,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public DriveSubsystem() {
+
     m_leftFrontDriveMotor = new TalonFX(10);
     m_rightFrontDriveMotor = new TalonFX(11);
     m_leftBackDriveMotor = new TalonFX(12);
