@@ -12,6 +12,7 @@ import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -75,12 +76,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_poseEstimator =
         new DifferentialDrivePoseEstimator(
             new DifferentialDriveKinematics(Constants.Drive.DRIVETRAIN_TRACK_WIDTH.in(Meters)),
-            null,
+            Rotation2d.kZero,
             0,
             0,
-            null,
-            null,
-            null);
+            new Pose2d(0, 0, Rotation2d.kZero));
 
     m_robotDrive =
         new DifferentialDrive(
