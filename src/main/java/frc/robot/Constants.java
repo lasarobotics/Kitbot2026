@@ -1,9 +1,14 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 
 public final class Constants {
@@ -18,6 +23,11 @@ public final class Constants {
     public static final AngularVelocity REVERSING_INDEXER_SPEED = RotationsPerSecond.of(-30);
 
     public static final AngularVelocity SHOOTER_SPEED_ERROR_TOLERANCE = RotationsPerSecond.of(2);
+  }
+
+  public static class Drive {
+    public static final double DRIVETRAIN_GEAR_RATIO = 10.71;
+    public static final Distance DRIVETRAIN_WHEEL_DIAMETER = Inches.of(6);
   }
 
   public static class Auto {
