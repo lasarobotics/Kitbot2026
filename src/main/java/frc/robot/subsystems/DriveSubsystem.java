@@ -110,16 +110,19 @@ public class DriveSubsystem extends SubsystemBase {
       m_gyro.reset();
     }
 
-    Pose2d pose =
-        m_poseEstimator.update(
-            m_gyro.getRotation2d(),
-            new DifferentialDriveWheelPositions(
-                (m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
-                    / Constants.Drive.DRIVETRAIN_GEAR_RATIO
-                    * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)),
-                (m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
-                        / Constants.Drive.DRIVETRAIN_GEAR_RATIO)
-                    * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)));
+    m_poseEstimator.update(
+        m_gyro.getRotation2d(),
+        new DifferentialDriveWheelPositions(
+            (m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
+                / Constants.Drive.DRIVETRAIN_GEAR_RATIO
+                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)),
+            (m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
+                    / Constants.Drive.DRIVETRAIN_GEAR_RATIO)
+                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)));
+
+    Pose2d pose = m_poseEstimator.getEstimatedPosition();
+
+    // limelight hub orientation
 
     Logger.recordOutput("DriveSubsystem/zeroRequest", m_zeroRequest.getAsBoolean());
     Logger.recordOutput("DriveSubsystem/pose", pose);

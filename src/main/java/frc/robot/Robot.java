@@ -66,7 +66,16 @@ public class Robot extends LoggedRobot {
               } else {
                 return -m_controller.getRightX();
               }
-            });
+            },
+            () -> {
+              if (m_controller.start().getAsBoolean()) {
+                return true;
+              } else {
+                return false;
+              }
+            }
+            );
+
   }
 
   /**
