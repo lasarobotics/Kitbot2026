@@ -79,25 +79,6 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    // boolean shooting = m_controller.rightTrigger().getAsBoolean();
-    // boolean intaking = m_controller.leftTrigger().getAsBoolean();
-    // boolean reversing = m_controller.b().getAsBoolean();
-
-    // if (shooting) {
-    //   m_leftMainMotor.set(1.0);
-    //   m_rightMainMotor.set(-1.0);
-    // } else if (intaking) {
-    //   m_leftMainMotor.set(1.0);
-    //   m_rightMainMotor.set(1.0);
-    // } else if (reversing) {
-    //   m_leftMainMotor.set(-1.0);
-    //   m_rightMainMotor.set(-1.0);
-    // } else {
-    //   m_leftMainMotor.set(0.0);
-    //   m_rightMainMotor.set(0.0);
-    // }
-
-    // m_robotDrive.arcadeDrive(m_controller.getLeftY(), -m_controller.getLeftX());
   }
 
   private Timer m_autoTimer = new Timer();
@@ -176,7 +157,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {}
+  public void simulationInit() {
+    
+  }
 
   /** This function is called periodically whilst in simulation. */
   @Override
