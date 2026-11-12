@@ -1,9 +1,11 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 
 public final class Constants {
@@ -30,5 +32,11 @@ public final class Constants {
         AUTO_DRIVE_TIME.plus(AUTO_SHOOT_TIME).plus(AUTO_TURN_TIME);
 
     public static final double AUTO_DRIVE_SPEED = 0.5;
+  }
+
+  public static final class Drive {
+    public static final double DRIVE_GEAR_RATIO = 10.71;
+    public static final Distance DRIVE_WHEEL_CIRCUMFERENCE = Inches.of(6 * Math.PI);
+    public static final Distance DRIVE_TRACK_WIDTH = Inches.of(21.58);
   }
 }
