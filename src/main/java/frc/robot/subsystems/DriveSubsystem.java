@@ -4,9 +4,11 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.math.VecBuilder;
@@ -54,11 +56,19 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public DriveSubsystem() {
-    m_gyro = new Pigeon2(0);
+    m_gyro = new Pigeon2(9);
     m_leftFrontDriveMotor = new TalonFX(10);
     m_rightFrontDriveMotor = new TalonFX(11);
     m_leftBackDriveMotor = new TalonFX(12);
     m_rightBackDriveMotor = new TalonFX(13);
+
+    TalonFXConfiguration leftMotorConfig = new TalonFXConfiguration();
+    leftMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    TalonFXConfiguration rightMotorConfig = new TalonFXConfiguration();
+    rightMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    m_leftFrontDriveMotor.getConfigurator().apply(leftMotorConfig);
+    m_rightFrontDriveMotor.getConfigurator().apply(rightMotorConfig);
 
     m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
     m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
@@ -81,14 +91,7 @@ public class DriveSubsystem extends SubsystemBase {
             0,
             new Pose2d(0, 0, Rotation2d.kZero));
 
-    m_robotDrive =
-        new DifferentialDrive(
-            (double speed) -> {
-              m_leftFrontDriveMotor.set(speed);
-            },
-            (double speed) -> {
-              m_rightFrontDriveMotor.set(-speed);
-            });
+    m_robotDrive = new DifferentialDrive(m_leftFrontDriveMotor::set, m_rightFrontDriveMotor::set);
   }
 
   @Override
@@ -111,14 +114,15 @@ public class DriveSubsystem extends SubsystemBase {
     Logger.recordOutput("DriveSubsystem/pose", pose);
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
     Logger.recordOutput("DriveSubsystem/turnRequest", m_turnRequest.getAsDouble());
-    DifferentialDrive.WheelSpeeds wheelSpeeds = DifferentialDrive.arcadeDriveIK(0, 0, true);
+    DifferentialDrive.WheelSpeeds wheelSpeeds =
+        DifferentialDrive.arcadeDriveIK(driveRequest, turnRequest, true);
     Logger.recordOutput("DriveSubsystem/leftWheelWantedOutput", wheelSpeeds.left);
     Logger.recordOutput("DriveSubsystem/rightWheelWantedOutput", wheelSpeeds.right);
     Logger.recordOutput(
         "DriveSubsystem/leftWheelActualDutyCycle", m_leftFrontDriveMotor.getDutyCycle().getValue());
     Logger.recordOutput(
         "DriveSubsystem/rightWheelActualDutyCycle",
-        -m_rightFrontDriveMotor.getDutyCycle().getValue());
+        m_rightFrontDriveMotor.getDutyCycle().getValue());
   }
 
   public void simulationPeriodic() {
