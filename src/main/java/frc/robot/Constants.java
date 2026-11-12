@@ -24,7 +24,8 @@ public final class Constants {
 
   public static class Drive {
     public static final double DRIVETRAIN_GEAR_RATIO = 10.71;
-    public static final Distance DRIVETRAIN_WHEEL_DIAMETER = Inches.of(6);
+    public static final Distance DRIVETRAIN_WHEEL_CIRCUMFERENCE = Inches.of(6 * Math.PI);
+    public static final Distance  DRIVETRAIN_TRACK_WIDTH = Inches.of(21.58);
   }
 
   public static class Auto {
