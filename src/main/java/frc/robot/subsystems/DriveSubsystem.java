@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -24,6 +25,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -96,6 +98,14 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    var bluePoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+
+    m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.5, 0.5, 999999));
+
+    m_poseEstimator.addVisionMeasurement(
+        bluePoseEstimate.pose, Utils.fpgaToCurrentTime(bluePoseEstimate.timestampSeconds));
+
     double driveRequest = m_driveRequest.getAsDouble();
     double turnRequest = m_turnRequest.getAsDouble();
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);

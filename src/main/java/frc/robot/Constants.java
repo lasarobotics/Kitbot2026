@@ -39,10 +39,4 @@ public final class Constants {
 
     public static final double AUTO_DRIVE_SPEED = 0.5;
   }
-
-  public static final class Drive {
-    public static final double DRIVE_GEAR_RATIO = 10.71;
-    public static final Distance DRIVE_WHEEL_CIRCUMFERENCE = Inches.of(6 * Math.PI);
-    public static final Distance DRIVE_TRACK_WIDTH = Inches.of(21.58);
-  }
 }
