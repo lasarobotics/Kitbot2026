@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import java.util.function.BooleanSupplier;
 import frc.robot.LimelightHelpers;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -44,6 +45,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   DoubleSupplier m_driveRequest;
   DoubleSupplier m_turnRequest;
+  BooleanSupplier m_zeroRequest;
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -52,9 +54,11 @@ public class DriveSubsystem extends SubsystemBase {
     return s_driveSubsystem;
   }
 
-  public void configureBindings(DoubleSupplier driveRequest, DoubleSupplier turnRequest) {
+  public void configureBindings(
+      DoubleSupplier driveRequest, DoubleSupplier turnRequest, BooleanSupplier zeroRequest) {
     m_driveRequest = driveRequest;
     m_turnRequest = turnRequest;
+    m_zeroRequest = zeroRequest;
   }
 
   public DriveSubsystem() {
@@ -108,19 +112,29 @@ public class DriveSubsystem extends SubsystemBase {
 
     double driveRequest = m_driveRequest.getAsDouble();
     double turnRequest = m_turnRequest.getAsDouble();
+    boolean zeroRequest = m_zeroRequest.getAsBoolean();
+
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
-    Pose2d pose =
-        m_poseEstimator.update(
-            m_gyro.getRotation2d(),
-            new DifferentialDriveWheelPositions(
-                (m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
-                    / Constants.Drive.DRIVETRAIN_GEAR_RATIO
-                    * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)),
-                (m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
-                        / Constants.Drive.DRIVETRAIN_GEAR_RATIO)
-                    * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)));
+    if (zeroRequest) {
+      m_gyro.reset();
+    }
 
+    m_poseEstimator.update(
+        m_gyro.getRotation2d(),
+        new DifferentialDriveWheelPositions(
+            (m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
+                / Constants.Drive.DRIVETRAIN_GEAR_RATIO
+                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)),
+            (m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
+                    / Constants.Drive.DRIVETRAIN_GEAR_RATIO)
+                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)));
+
+    Pose2d pose = m_poseEstimator.getEstimatedPosition();
+
+    // limelight hub orientation
+
+    Logger.recordOutput("DriveSubsystem/zeroRequest", m_zeroRequest.getAsBoolean());
     Logger.recordOutput("DriveSubsystem/pose", pose);
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
     Logger.recordOutput("DriveSubsystem/turnRequest", m_turnRequest.getAsDouble());
