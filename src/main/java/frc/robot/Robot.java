@@ -62,11 +62,16 @@ public class Robot extends LoggedRobot {
             },
             () -> {
               if (isAutonomous()) {
-                return 0;
+                if (m_shouldAutoTurn) {
+                  return Constants.Auto.AUTO_DRIVE_SPEED;
+                } else {
+                  return 0;
+                }
               } else {
                 return -m_controller.getRightX();
               }
-            });
+            },
+            () -> m_controller.start().getAsBoolean());
   }
 
   /**
@@ -148,6 +153,7 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Auto/timeElapsed", m_autoTimer.get());
     Logger.recordOutput("Auto/autoDriving", m_shouldAutoDrive);
     Logger.recordOutput("Auto/autoShooting", m_shouldAutoShoot);
+    Logger.recordOutput("Auto/autoTurning", m_shouldAutoTurn);
   }
 
   /** This function is called once when teleop is enabled. */
