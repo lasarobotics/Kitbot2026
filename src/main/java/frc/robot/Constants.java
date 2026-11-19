@@ -39,4 +39,14 @@ public final class Constants {
 
     public static final double AUTO_DRIVE_SPEED = 0.5;
   }
+
+  public static class Feild {
+    public static final Distance FIELD_X = Inches.of(650.12);
+    public static final Distance FIELD_Y = Inches.of(316.64);
+  }
+
+  public static class Limelight_Constants {
+    public static final double SINGLE_TAG_DISTANCE_CUTOFF = 0.5;
+    public static final double SINGLE_TAG_AMBIGUITY_CUTOFF = 5;
+  }
 }

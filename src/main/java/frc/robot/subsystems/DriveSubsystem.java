@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.Utils;
@@ -20,13 +21,15 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import java.util.function.BooleanSupplier;
 import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.RawFiducial;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -46,6 +49,8 @@ public class DriveSubsystem extends SubsystemBase {
   DoubleSupplier m_driveRequest;
   DoubleSupplier m_turnRequest;
   BooleanSupplier m_zeroRequest;
+
+  private static volatile double s_limelightHeartbeat;
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -103,12 +108,18 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
 
-    var bluePoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+    LimelightHelpers.PoseEstimate poseEstimate = getFilteredLimelightPose();
 
-    m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.5, 0.5, 999999));
+    if (poseEstimate != null) {
+      if (DriverStation.isDisabled()) {
+        m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.25, 0.25, 0.25));
+      } else {
+        m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.5, 0.5, 999999));
+      }
 
-    m_poseEstimator.addVisionMeasurement(
-        bluePoseEstimate.pose, Utils.fpgaToCurrentTime(bluePoseEstimate.timestampSeconds));
+      m_poseEstimator.addVisionMeasurement(
+          poseEstimate.pose, Utils.fpgaToCurrentTime(poseEstimate.timestampSeconds));
+    }
 
     double driveRequest = m_driveRequest.getAsDouble();
     double turnRequest = m_turnRequest.getAsDouble();
@@ -147,6 +158,57 @@ public class DriveSubsystem extends SubsystemBase {
     Logger.recordOutput(
         "DriveSubsystem/rightWheelActualDutyCycle",
         m_rightFrontDriveMotor.getDutyCycle().getValue());
+  }
+
+  private LimelightHelpers.PoseEstimate getFilteredLimelightPose() {
+
+    LimelightHelpers.PoseEstimate pose_estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+
+    double hb = LimelightHelpers.getHeartbeat("");
+
+    if (hb == s_limelightHeartbeat) {
+      return null;
+    } else {
+      s_limelightHeartbeat = hb;
+    }
+
+    if (pose_estimate == null) {
+      return null;
+    }
+
+    if (m_gyro.getAngularVelocityZWorld().getValue().abs(RotationsPerSecond) > 2 * Math.PI) {
+      return null;
+    }
+
+    if (pose_estimate.tagCount == 0) {
+      return null;
+    }
+
+    if (Double.isNaN(pose_estimate.pose.getX())
+        || Double.isNaN(pose_estimate.pose.getX())
+        || Double.isNaN(pose_estimate.pose.getRotation().getDegrees())) {
+      return null;
+    }
+
+    if (pose_estimate.pose.getX() < 0
+        || pose_estimate.pose.getX() > Constants.Feild.FIELD_X.in(Meters)
+        || pose_estimate.pose.getY() < 0
+        || pose_estimate.pose.getY() > Constants.Feild.FIELD_Y.in(Meters)) {
+
+      return null;
+    }
+
+    if (pose_estimate.tagCount == 1 && pose_estimate.rawFiducials.length == 1) {
+      RawFiducial tag = pose_estimate.rawFiducials[0];
+      if (tag.ambiguity > Constants.Limelight_Constants.SINGLE_TAG_AMBIGUITY_CUTOFF) {
+        return null;
+      }
+      if (tag.distToCamera > Constants.Limelight_Constants.SINGLE_TAG_DISTANCE_CUTOFF) {
+        return null;
+      }
+    }
+
+    return pose_estimate;
   }
 
   public void simulationPeriodic() {
