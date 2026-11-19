@@ -10,7 +10,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +27,6 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -45,7 +46,11 @@ public class DriveSubsystem extends SubsystemBase {
 
   DifferentialDrivePoseEstimator m_poseEstimator;
 
-  Optional<Alliance> alliance = DriverStation.getAlliance();
+  // to do :D gotta update kp ki and kd when phoenix tuner available
+  PIDController pid;
+
+  public double TargetX;
+  public double TargetY;
 
   DifferentialDrive m_robotDrive;
 
@@ -104,6 +109,11 @@ public class DriveSubsystem extends SubsystemBase {
             0,
             new Pose2d(0, 0, Rotation2d.kZero));
 
+    pid = new PIDController(0, 0, 0);
+    pid.enableContinuousInput(-180, 180);
+    pid.setIntegratorRange(-.5, .5);
+    pid.setIZone(2);
+
     m_robotDrive = new DifferentialDrive(m_leftFrontDriveMotor::set, m_rightFrontDriveMotor::set);
     // 676767
   }
@@ -119,8 +129,12 @@ public class DriveSubsystem extends SubsystemBase {
     if (zeroRequest) {
       if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Blue)) {
         m_poseEstimator.resetRotation(Rotation2d.kZero);
+        TargetX = 4.619;
+        TargetY = 4.049;
       } else {
         m_poseEstimator.resetRotation(Rotation2d.k180deg);
+        TargetX = 11.925;
+        TargetY = 4.049;
       }
     }
 
@@ -135,6 +149,14 @@ public class DriveSubsystem extends SubsystemBase {
                 * Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)));
 
     Pose2d pose = m_poseEstimator.getEstimatedPosition();
+
+    // to do :D gotta find the target x and y to then calc y error and x error for the set point
+    MathUtil.clamp(
+        pid.calculate(
+            pose.getRotation().getRotations(),
+            Math.atan((TargetY - pose.getY()) / (TargetX - pose.getX()))),
+        -1,
+        1);
 
     Logger.recordOutput("DriveSubsystem/pose", pose);
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
