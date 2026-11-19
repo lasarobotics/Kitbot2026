@@ -18,11 +18,14 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -41,6 +44,8 @@ public class DriveSubsystem extends SubsystemBase {
   DifferentialDrivetrainSim m_DifferentialDrivetrainSim;
 
   DifferentialDrivePoseEstimator m_poseEstimator;
+
+  Optional<Alliance> alliance = DriverStation.getAlliance();
 
   DifferentialDrive m_robotDrive;
 
@@ -112,19 +117,24 @@ public class DriveSubsystem extends SubsystemBase {
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
     if (zeroRequest) {
-      m_gyro.reset();
+      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+        m_poseEstimator.resetRotation(Rotation2d.k180deg);
+      } else {
+        m_poseEstimator.resetRotation(Rotation2d.kZero);
+      }
     }
 
-    Pose2d pose =
-        m_poseEstimator.update(
-            m_gyro.getRotation2d(),
-            new DifferentialDriveWheelPositions(
-                m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
-                    * Constants.Drive.DRIVE_GEAR_RATIO
-                    / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters),
-                m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
-                    * Constants.Drive.DRIVE_GEAR_RATIO
-                    / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)));
+    m_poseEstimator.update(
+        m_gyro.getRotation2d(),
+        new DifferentialDriveWheelPositions(
+            m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
+                / Constants.Drive.DRIVE_GEAR_RATIO
+                * Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters),
+            m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
+                / Constants.Drive.DRIVE_GEAR_RATIO
+                * Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)));
+
+    Pose2d pose = m_poseEstimator.getEstimatedPosition();
 
     Logger.recordOutput("DriveSubsystem/pose", pose);
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
