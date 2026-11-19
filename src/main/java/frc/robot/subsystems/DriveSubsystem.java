@@ -117,10 +117,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
     if (zeroRequest) {
-      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-        m_poseEstimator.resetRotation(Rotation2d.k180deg);
-      } else {
+      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Blue)) {
         m_poseEstimator.resetRotation(Rotation2d.kZero);
+      } else {
+        m_poseEstimator.resetRotation(Rotation2d.k180deg);
       }
     }
 
