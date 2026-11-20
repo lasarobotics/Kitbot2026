@@ -52,6 +52,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   private static volatile double s_limelightHeartbeat;
 
+  protected final Thread m_limelight_thread;
+
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
       s_driveSubsystem = new DriveSubsystem();
@@ -67,7 +69,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public DriveSubsystem() {
-    m_gyro = new Pigeon2(9);
+    m_gyro = new Pigeon2(54);
     m_leftFrontDriveMotor = new TalonFX(10);
     m_rightFrontDriveMotor = new TalonFX(11);
     m_leftBackDriveMotor = new TalonFX(12);
@@ -103,23 +105,14 @@ public class DriveSubsystem extends SubsystemBase {
             new Pose2d(0, 0, Rotation2d.kZero));
 
     m_robotDrive = new DifferentialDrive(m_leftFrontDriveMotor::set, m_rightFrontDriveMotor::set);
+
+    m_limelight_thread = new Thread(this::limelight_thread_func);
+    m_limelight_thread.setDaemon(true);
+    m_limelight_thread.start();
   }
 
   @Override
   public void periodic() {
-
-    LimelightHelpers.PoseEstimate poseEstimate = getFilteredLimelightPose();
-
-    if (poseEstimate != null) {
-      if (DriverStation.isDisabled()) {
-        m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.25, 0.25, 0.25));
-      } else {
-        m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.5, 0.5, 999999));
-      }
-
-      m_poseEstimator.addVisionMeasurement(
-          poseEstimate.pose, Utils.fpgaToCurrentTime(poseEstimate.timestampSeconds));
-    }
 
     double driveRequest = m_driveRequest.getAsDouble();
     double turnRequest = m_turnRequest.getAsDouble();
@@ -160,26 +153,45 @@ public class DriveSubsystem extends SubsystemBase {
         m_rightFrontDriveMotor.getDutyCycle().getValue());
   }
 
+  private void limelight_thread_func() {
+    while (true) {
+      LimelightHelpers.PoseEstimate poseEstimate = getFilteredLimelightPose();
+
+      if (poseEstimate != null) {
+        Logger.recordOutput("DriveSubsystem/output", 1);
+        if (DriverStation.isDisabled()) {
+          m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.25, 0.25, 0.25));
+        } else {
+          m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.5, 0.5, 999999));
+        }
+
+        m_poseEstimator.addVisionMeasurement(
+            poseEstimate.pose, Utils.fpgaToCurrentTime(poseEstimate.timestampSeconds));
+      }
+    }
+  }
+
   private LimelightHelpers.PoseEstimate getFilteredLimelightPose() {
 
-    LimelightHelpers.PoseEstimate pose_estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+    LimelightHelpers.PoseEstimate pose_estimate =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
 
     double hb = LimelightHelpers.getHeartbeat("");
-
-    if (hb == s_limelightHeartbeat) {
-      return null;
-    } else {
-      s_limelightHeartbeat = hb;
-    }
-
+    Logger.recordOutput("DriveSubsystem/output", 4);
+    // if (hb == s_limelightHeartbeat) {
+    //  return null;
+    // } else {
+    //  s_limelightHeartbeat = hb;
+    // }
+    Logger.recordOutput("DriveSubsystem/output", 3);
     if (pose_estimate == null) {
       return null;
     }
-
+    Logger.recordOutput("DriveSubsystem/outputs", 2);
     if (m_gyro.getAngularVelocityZWorld().getValue().abs(RotationsPerSecond) > 2 * Math.PI) {
       return null;
     }
-
+    Logger.recordOutput("DriveSubsystem/tagcount", pose_estimate.tagCount);
     if (pose_estimate.tagCount == 0) {
       return null;
     }
@@ -191,9 +203,9 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     if (pose_estimate.pose.getX() < 0
-        || pose_estimate.pose.getX() > Constants.Feild.FIELD_X.in(Meters)
+        || pose_estimate.pose.getX() > Constants.Field.FIELD_X.in(Meters)
         || pose_estimate.pose.getY() < 0
-        || pose_estimate.pose.getY() > Constants.Feild.FIELD_Y.in(Meters)) {
+        || pose_estimate.pose.getY() > Constants.Field.FIELD_Y.in(Meters)) {
 
       return null;
     }
