@@ -10,14 +10,14 @@ import edu.wpi.first.units.measure.Time;
 
 public final class Constants {
   public static class FuelController {
-    public static final AngularVelocity SHOOTING_SHOOTER_SPEED = RotationsPerSecond.of(45);
-    public static final AngularVelocity SHOOTING_INDEXER_SPEED = RotationsPerSecond.of(-22.5);
+    public static final AngularVelocity SHOOTING_SHOOTER_SPEED = RotationsPerSecond.of(55);
+    public static final AngularVelocity SHOOTING_INDEXER_SPEED = RotationsPerSecond.of(-30);
 
-    public static final AngularVelocity INTAKING_SHOOTER_SPEED = RotationsPerSecond.of(30);
-    public static final AngularVelocity INTAKING_INDEXER_SPEED = RotationsPerSecond.of(40);
+    public static final AngularVelocity INTAKING_SHOOTER_SPEED = RotationsPerSecond.of(40);
+    public static final AngularVelocity INTAKING_INDEXER_SPEED = RotationsPerSecond.of(100);
 
     public static final AngularVelocity REVERSING_SHOOTER_SPEED = RotationsPerSecond.of(-30);
-    public static final AngularVelocity REVERSING_INDEXER_SPEED = RotationsPerSecond.of(-30);
+    public static final AngularVelocity REVERSING_INDEXER_SPEED = RotationsPerSecond.of(-35);
 
     public static final AngularVelocity SHOOTER_SPEED_ERROR_TOLERANCE = RotationsPerSecond.of(2);
   }
@@ -40,7 +40,7 @@ public final class Constants {
     public static final double AUTO_DRIVE_SPEED = 0.5;
   }
 
-  public static class Feild {
+  public static class Field {
     public static final Distance FIELD_X = Inches.of(650.12);
     public static final Distance FIELD_Y = Inches.of(316.64);
   }

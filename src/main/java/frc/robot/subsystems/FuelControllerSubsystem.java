@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -37,8 +38,17 @@ public class FuelControllerSubsystem extends SubsystemBase {
     m_shooterIntakeRequest = new VelocityVoltage(0);
     m_indexerRequest = new VelocityVoltage(0);
 
-    TalonFXConfiguration shooterIntakeConfig = new TalonFXConfiguration();
-    TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
+    TalonFXConfiguration shooterIntakeConfig =
+        new TalonFXConfiguration()
+            .withSlot0(new Slot0Configs().withKP(0.6).withKS(0.314).withKV(0.125));
+
+    TalonFXConfiguration indexerConfig =
+        new TalonFXConfiguration()
+            .withSlot0(
+                new Slot0Configs()
+                    .withKP(0.009999999776482582)
+                    .withKS(0.1845703125)
+                    .withKV(0.10999999940395357));
 
     m_shooterIntakeMotor.getConfigurator().apply(shooterIntakeConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
