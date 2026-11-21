@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -11,7 +10,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,6 +20,8 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -31,14 +34,24 @@ import org.littletonrobotics.junction.Logger;
 public class DriveSubsystem extends SubsystemBase {
 
   private static DriveSubsystem s_driveSubsystem;
+
   Pigeon2 m_gyro;
+
   TalonFX m_leftFrontDriveMotor;
   TalonFX m_rightFrontDriveMotor;
   TalonFX m_leftBackDriveMotor;
   TalonFX m_rightBackDriveMotor;
 
-  DifferentialDrivetrainSim m_differentialDrivetrainSim;
+  DifferentialDrivetrainSim m_DifferentialDrivetrainSim;
+
   DifferentialDrivePoseEstimator m_poseEstimator;
+
+  // to do :D gotta update kp ki and kd when phoenix tuner available
+  PIDController pid;
+
+  public double TargetX;
+  public double TargetY;
+
   DifferentialDrive m_robotDrive;
 
   DoubleSupplier m_driveRequest;
@@ -60,7 +73,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public DriveSubsystem() {
-    m_gyro = new Pigeon2(9);
+    m_gyro = new Pigeon2(0);
+
     m_leftFrontDriveMotor = new TalonFX(10);
     m_rightFrontDriveMotor = new TalonFX(11);
     m_leftBackDriveMotor = new TalonFX(12);
@@ -77,7 +91,7 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftBackDriveMotor.setControl(new Follower(10, MotorAlignmentValue.Aligned));
     m_rightBackDriveMotor.setControl(new Follower(11, MotorAlignmentValue.Aligned));
 
-    m_differentialDrivetrainSim =
+    m_DifferentialDrivetrainSim =
         new DifferentialDrivetrainSim(
             DCMotor.getKrakenX60(2),
             10.71,
@@ -89,13 +103,19 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_poseEstimator =
         new DifferentialDrivePoseEstimator(
-            new DifferentialDriveKinematics(Constants.Drive.DRIVETRAIN_TRACK_WIDTH.in(Meters)),
+            new DifferentialDriveKinematics(Constants.Drive.DRIVE_TRACK_WIDTH.in(Meters)),
             Rotation2d.kZero,
             0,
             0,
             new Pose2d(0, 0, Rotation2d.kZero));
 
+    pid = new PIDController(0, 0, 0);
+    pid.enableContinuousInput(-180, 180);
+    pid.setIntegratorRange(-.5, .5);
+    pid.setIZone(2);
+
     m_robotDrive = new DifferentialDrive(m_leftFrontDriveMotor::set, m_rightFrontDriveMotor::set);
+    // 676767
   }
 
   @Override
@@ -107,27 +127,41 @@ public class DriveSubsystem extends SubsystemBase {
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
     if (zeroRequest) {
-      m_gyro.reset();
+      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Blue)) {
+        m_poseEstimator.resetRotation(Rotation2d.kZero);
+        TargetX = 4.619;
+        TargetY = 4.049;
+      } else {
+        m_poseEstimator.resetRotation(Rotation2d.k180deg);
+        TargetX = 11.925;
+        TargetY = 4.049;
+      }
     }
 
     m_poseEstimator.update(
         m_gyro.getRotation2d(),
         new DifferentialDriveWheelPositions(
-            (m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
-                / Constants.Drive.DRIVETRAIN_GEAR_RATIO
-                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)),
-            (m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
-                    / Constants.Drive.DRIVETRAIN_GEAR_RATIO)
-                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)));
+            m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
+                / Constants.Drive.DRIVE_GEAR_RATIO
+                * Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters),
+            m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
+                / Constants.Drive.DRIVE_GEAR_RATIO
+                * Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)));
 
     Pose2d pose = m_poseEstimator.getEstimatedPosition();
 
-    // limelight hub orientation
+    // to do :D gotta find the target x and y to then calc y error and x error for the set point
+    MathUtil.clamp(
+        pid.calculate(
+            pose.getRotation().getRotations(),
+            Math.atan((TargetY - pose.getY()) / (TargetX - pose.getX()))),
+        -1,
+        1);
 
-    Logger.recordOutput("DriveSubsystem/zeroRequest", m_zeroRequest.getAsBoolean());
     Logger.recordOutput("DriveSubsystem/pose", pose);
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
     Logger.recordOutput("DriveSubsystem/turnRequest", m_turnRequest.getAsDouble());
+    Logger.recordOutput("DriveSubsystem/zeroRequest", m_zeroRequest.getAsBoolean());
     DifferentialDrive.WheelSpeeds wheelSpeeds =
         DifferentialDrive.arcadeDriveIK(driveRequest, turnRequest, true);
     Logger.recordOutput("DriveSubsystem/leftWheelWantedOutput", wheelSpeeds.left);
@@ -142,7 +176,6 @@ public class DriveSubsystem extends SubsystemBase {
   public void simulationPeriodic() {
     var leftFrontDriveMotorSim = m_leftFrontDriveMotor.getSimState();
     var rightFrontDriveMotorSim = m_rightFrontDriveMotor.getSimState();
-    var gyroSim = m_gyro.getSimState();
 
     leftFrontDriveMotorSim.Orientation = ChassisReference.CounterClockwise_Positive;
     rightFrontDriveMotorSim.Orientation = ChassisReference.Clockwise_Positive;
@@ -150,29 +183,28 @@ public class DriveSubsystem extends SubsystemBase {
     leftFrontDriveMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     rightFrontDriveMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-    var leftFrontDriveMotorVoltage = leftFrontDriveMotorSim.getMotorVoltageMeasure();
-    var rightFrontDriveMotorVoltage = rightFrontDriveMotorSim.getMotorVoltageMeasure();
-    m_differentialDrivetrainSim.setInputs(
-        leftFrontDriveMotorVoltage.in(Volts), rightFrontDriveMotorVoltage.in(Volts));
+    var leftFrontDriveMotorSimVoltage = leftFrontDriveMotorSim.getMotorVoltage();
+    var rightFrontDriveMotorSimVoltage = leftFrontDriveMotorSim.getMotorVoltage();
+    m_DifferentialDrivetrainSim.setInputs(
+        leftFrontDriveMotorSimVoltage, rightFrontDriveMotorSimVoltage);
 
-    m_differentialDrivetrainSim.update(0.02);
+    m_DifferentialDrivetrainSim.update(0.02);
 
     leftFrontDriveMotorSim.setRawRotorPosition(
-        (m_differentialDrivetrainSim.getLeftPositionMeters()
-                / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters))
-            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
+        m_DifferentialDrivetrainSim.getLeftPositionMeters()
+            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVE_GEAR_RATIO);
     leftFrontDriveMotorSim.setRotorVelocity(
-        (m_differentialDrivetrainSim.getLeftVelocityMetersPerSecond()
-                / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters))
-            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
+        m_DifferentialDrivetrainSim.getLeftVelocityMetersPerSecond()
+            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVE_GEAR_RATIO);
     rightFrontDriveMotorSim.setRawRotorPosition(
-        (m_differentialDrivetrainSim.getRightPositionMeters()
-                / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters))
-            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
+        m_DifferentialDrivetrainSim.getRightPositionMeters()
+            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVE_GEAR_RATIO);
     rightFrontDriveMotorSim.setRotorVelocity(
-        (m_differentialDrivetrainSim.getRightVelocityMetersPerSecond()
-                / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters))
-            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
-    gyroSim.setRawYaw(m_differentialDrivetrainSim.getHeading().getDegrees());
+        m_DifferentialDrivetrainSim.getRightVelocityMetersPerSecond()
+            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVE_GEAR_RATIO);
   }
 }
