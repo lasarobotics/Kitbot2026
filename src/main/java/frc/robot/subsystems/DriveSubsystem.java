@@ -57,6 +57,7 @@ public class DriveSubsystem extends SubsystemBase {
   DoubleSupplier m_driveRequest;
   DoubleSupplier m_turnRequest;
   BooleanSupplier m_zeroRequest;
+  BooleanSupplier m_agitateRequest;
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -66,9 +67,10 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void configureBindings(
-      DoubleSupplier driveRequest, DoubleSupplier turnRequest, BooleanSupplier zeroRequest) {
+      DoubleSupplier driveRequest, DoubleSupplier turnRequest, BooleanSupplier zeroRequest, BooleanSupplier agitateRequest) {
     m_driveRequest = driveRequest;
     m_turnRequest = turnRequest;
+    m_agitateRequest = agitateRequest;
     m_zeroRequest = zeroRequest;
   }
 
@@ -122,7 +124,9 @@ public class DriveSubsystem extends SubsystemBase {
   public void periodic() {
     double driveRequest = m_driveRequest.getAsDouble();
     double turnRequest = m_turnRequest.getAsDouble();
+    boolean agitateRequest = m_agitateRequest.getAsBoolean();
     boolean zeroRequest = m_zeroRequest.getAsBoolean();
+    boolean agitateForward = true;
 
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
@@ -135,6 +139,16 @@ public class DriveSubsystem extends SubsystemBase {
         m_poseEstimator.resetRotation(Rotation2d.k180deg);
         TargetX = 11.925;
         TargetY = 4.049;
+      }
+    }
+
+    if (agitateRequest && (!(driveRequest > 0.05) && !(turnRequest > 0.05))) {
+      if (agitateForward) {
+        m_robotDrive.arcadeDrive(0.5, turnRequest, true); // Moves forward
+        agitateForward = false;
+      } else {
+        m_robotDrive.arcadeDrive(-0.5, turnRequest, true); // Moves backward
+        agitateForward = true;
       }
     }
 

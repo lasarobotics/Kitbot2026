@@ -71,7 +71,14 @@ public class Robot extends LoggedRobot {
                 return -m_controller.getRightX();
               }
             },
-            () -> m_controller.start().getAsBoolean());
+            m_controller.start().getAsBoolean(),
+            () -> {
+              if (isAutonomous) {
+                return m_agitateRequest;
+              } else {
+                return m_controller.a().getAsBoolean();
+              }
+            });
   }
 
   /**
@@ -90,6 +97,7 @@ public class Robot extends LoggedRobot {
   private boolean m_shouldAutoDrive = false;
   private boolean m_shouldAutoShoot = false;
   private boolean m_shouldAutoTurn = false;
+  private boolean m_shouldAutoAgitate = false;
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -143,7 +151,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
