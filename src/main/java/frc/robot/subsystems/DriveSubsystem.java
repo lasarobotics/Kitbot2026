@@ -146,17 +146,17 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     if (agitateRequest) {
-      if (m_agitationFlipTimer.get() == 0) {
+      if (!m_agitationFlipTimer.isRunning()) {
         m_agitationFlipTimer.start();
       } 
       if (m_agitationFlipTimer.hasElapsed(Constants.Drive.AGITATION_FLIP_TIME)) {
-        m_robotDrive.arcadeDrive(1, 0, true); // Moves forward
-      } else {
-        m_robotDrive.arcadeDrive(-1, 0, true); // Moves backward
-      }
+          m_robotDrive.arcadeDrive(0.2, 0, false); // Moves forward
+        } else {
+          m_robotDrive.arcadeDrive(-0.2, 0, false); // Moves backward
+        }
       if (m_agitationFlipTimer.hasElapsed(Constants.Drive.AGITATION_FLIP_TIME.times(2).in(Seconds))) {
-        m_agitationFlipTimer.reset();
-      }
+          m_agitationFlipTimer.restart();
+        }
     }
 
     m_poseEstimator.update(
