@@ -26,6 +26,7 @@ public final class Constants {
     public static final double DRIVETRAIN_GEAR_RATIO = 10.71;
     public static final Distance DRIVETRAIN_WHEEL_CIRCUMFERENCE = Inches.of(6 * Math.PI);
     public static final Distance DRIVETRAIN_TRACK_WIDTH = Inches.of(21.58);
+    public static final Time AGITATION_FLIP_TIME = Seconds.of(0.2);
   }
 
   public static class Auto {

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -23,6 +24,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -58,6 +60,8 @@ public class DriveSubsystem extends SubsystemBase {
   DoubleSupplier m_turnRequest;
   BooleanSupplier m_zeroRequest;
   BooleanSupplier m_agitateRequest;
+  
+  Timer m_agitationFlipTimer = new Timer();
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -70,9 +74,9 @@ public class DriveSubsystem extends SubsystemBase {
       DoubleSupplier driveRequest, DoubleSupplier turnRequest, BooleanSupplier zeroRequest, BooleanSupplier agitateRequest) {
     m_driveRequest = driveRequest;
     m_turnRequest = turnRequest;
-    m_agitateRequest = agitateRequest;
     m_zeroRequest = zeroRequest;
-  }
+    m_agitateRequest = agitateRequest;
+    }
 
   public DriveSubsystem() {
     m_gyro = new Pigeon2(0);
@@ -105,7 +109,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_poseEstimator =
         new DifferentialDrivePoseEstimator(
-            new DifferentialDriveKinematics(Constants.Drive.DRIVE_TRACK_WIDTH.in(Meters)),
+            new DifferentialDriveKinematics(Constants.Drive.DRIVETRAIN_TRACK_WIDTH.in(Meters)),
             Rotation2d.kZero,
             0,
             0,
@@ -126,7 +130,6 @@ public class DriveSubsystem extends SubsystemBase {
     double turnRequest = m_turnRequest.getAsDouble();
     boolean agitateRequest = m_agitateRequest.getAsBoolean();
     boolean zeroRequest = m_zeroRequest.getAsBoolean();
-    boolean agitateForward = true;
 
     m_robotDrive.arcadeDrive(driveRequest, turnRequest, true);
 
@@ -142,13 +145,17 @@ public class DriveSubsystem extends SubsystemBase {
       }
     }
 
-    if (agitateRequest && (!(driveRequest > 0.05) && !(turnRequest > 0.05))) {
-      if (agitateForward) {
-        m_robotDrive.arcadeDrive(0.5, turnRequest, true); // Moves forward
-        agitateForward = false;
+    if (agitateRequest) {
+      if (m_agitationFlipTimer.get() == 0) {
+        m_agitationFlipTimer.start();
+      } 
+      if (m_agitationFlipTimer.hasElapsed(Constants.Drive.AGITATION_FLIP_TIME)) {
+        m_robotDrive.arcadeDrive(1, 0, true); // Moves forward
       } else {
-        m_robotDrive.arcadeDrive(-0.5, turnRequest, true); // Moves backward
-        agitateForward = true;
+        m_robotDrive.arcadeDrive(-1, 0, true); // Moves backward
+      }
+      if (m_agitationFlipTimer.hasElapsed(Constants.Drive.AGITATION_FLIP_TIME.times(2).in(Seconds))) {
+        m_agitationFlipTimer.reset();
       }
     }
 
@@ -156,11 +163,11 @@ public class DriveSubsystem extends SubsystemBase {
         m_gyro.getRotation2d(),
         new DifferentialDriveWheelPositions(
             m_leftFrontDriveMotor.getPosition().getValue().in(Rotations)
-                / Constants.Drive.DRIVE_GEAR_RATIO
-                * Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters),
+                / Constants.Drive.DRIVETRAIN_GEAR_RATIO
+                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters),
             m_rightFrontDriveMotor.getPosition().getValue().in(Rotations)
-                / Constants.Drive.DRIVE_GEAR_RATIO
-                * Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)));
+                / Constants.Drive.DRIVETRAIN_GEAR_RATIO
+                * Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)));
 
     Pose2d pose = m_poseEstimator.getEstimatedPosition();
 
@@ -176,6 +183,9 @@ public class DriveSubsystem extends SubsystemBase {
     Logger.recordOutput("DriveSubsystem/driveRequest", m_driveRequest.getAsDouble());
     Logger.recordOutput("DriveSubsystem/turnRequest", m_turnRequest.getAsDouble());
     Logger.recordOutput("DriveSubsystem/zeroRequest", m_zeroRequest.getAsBoolean());
+    Logger.recordOutput("DriveSubsystem/agitateRequest", m_agitateRequest.getAsBoolean());
+    Logger.recordOutput("DriveSubsystem/agitationFlipTimer", m_agitationFlipTimer.get());
+
     DifferentialDrive.WheelSpeeds wheelSpeeds =
         DifferentialDrive.arcadeDriveIK(driveRequest, turnRequest, true);
     Logger.recordOutput("DriveSubsystem/leftWheelWantedOutput", wheelSpeeds.left);
@@ -206,19 +216,19 @@ public class DriveSubsystem extends SubsystemBase {
 
     leftFrontDriveMotorSim.setRawRotorPosition(
         m_DifferentialDrivetrainSim.getLeftPositionMeters()
-            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
-            * Constants.Drive.DRIVE_GEAR_RATIO);
+            / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
     leftFrontDriveMotorSim.setRotorVelocity(
         m_DifferentialDrivetrainSim.getLeftVelocityMetersPerSecond()
-            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
-            * Constants.Drive.DRIVE_GEAR_RATIO);
+            / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
     rightFrontDriveMotorSim.setRawRotorPosition(
         m_DifferentialDrivetrainSim.getRightPositionMeters()
-            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
-            * Constants.Drive.DRIVE_GEAR_RATIO);
+            / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
     rightFrontDriveMotorSim.setRotorVelocity(
         m_DifferentialDrivetrainSim.getRightVelocityMetersPerSecond()
-            / Constants.Drive.DRIVE_WHEEL_CIRCUMFERENCE.in(Meters)
-            * Constants.Drive.DRIVE_GEAR_RATIO);
+            / Constants.Drive.DRIVETRAIN_WHEEL_CIRCUMFERENCE.in(Meters)
+            * Constants.Drive.DRIVETRAIN_GEAR_RATIO);
   }
 }
